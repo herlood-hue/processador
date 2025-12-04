@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Declaração de Conteúdo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.7.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .pdf-link:hover {
+            text-decoration: underline;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .pdf-viewer-container {
+            height: 600px; /* Adjust height as needed */
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="container mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800 text-center">Gerador de Declaração de Conteúdo</h1>
+        <p class="mb-6 text-gray-600 text-center">
+            Faça o upload do seu arquivo de planilha da Amazon para gerar automaticamente as declarações de conteúdo em PDF.
+        </p>
+
+        <div class="mb-6">
+            <label for="fileInput" class="block text-sm font-medium text-gray-700 mb-2">Selecione o arquivo de planilha</label>
+            <input type="file" id="fileInput" class="w-full text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div id="statusMessage" class="mb-4 text-center text-sm font-medium text-gray-600 hidden">
+            Processando... <div class="loading-spinner mx-auto mt-2"></div>
+        </div>
+        
+        <div id="results" class="hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700 text-center">Declarações Geradas</h2>
+            <div id="pdfLinks" class="space-y-2 mb-4"></div>
+            <div class="text-center">
+                <button id="downloadAllBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                    Baixar PDF Único
+                </button>
+            </div>
+            
+            <div id="pdfViewerContainer" class="pdf-viewer-container mt-8 hidden">
+                <iframe id="pdfViewer" class="rounded-lg shadow-inner border border-gray-300"></iframe>
+            </div>
+
+        </div>
+
+        <div id="errorMessage" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">Erro:</strong>
+            <span id="errorText" class="block sm:inline"></span>
+        </div>
+    </div>
+
+    <script>
+        const { PDFDocument, rgb } = PDFLib;
+        const fileInput = document.getElementById('fileInput');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultsDiv = document.getElementById('results');
+        const pdfViewerContainer = document.getElementById('pdfViewerContainer');
+        const pdfViewer = document.getElementById('pdfViewer');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const errorMessageDiv = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+
+        // Dados fixos do remetente, conforme solicitado
+        const senderInfo = {
+            nome: "Herlon Felipe (seboparaibuna)",
+            endereco: "Rua Padre Américo, 376 - Vila de Fatima",
+            cidade: "Paraibuna",
+            uf: "SP",
+            cep: "12260-000",
+            cpf_cnpj: "" // Deixando em branco pois não foi fornecido
+        };
+
+        let generatedPdfBlob = null;
+
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            statusMessage.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            pdfViewerContainer.classList.add('hidden');
+            errorMessageDiv.classList.add('hidden');
+            generatedPdfBlob = null;
+
+            try {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    processWorkbook(workbook);
+                };
+                reader.onerror = function(e) {
+                    throw new Error("Erro ao ler o arquivo. Verifique se ele não está corrompido.");
+                };
+                reader.readAsArrayBuffer(file);
+
+            } catch (error) {
+                console.error("Erro ao processar o arquivo:", error);
+                errorText.innerText = error.message || "Ocorreu um erro inesperado ao processar o arquivo. Verifique se o arquivo é uma planilha válida.";
+                errorMessageDiv.classList.remove('hidden');
+            } finally {
+                statusMessage.classList.add('hidden');
+            }
+        });
+
+        downloadAllBtn.addEventListener('click', () => {
+            if (generatedPdfBlob) {
+                saveAs(generatedPdfBlob, `Declaracoes_Conteudo_Completas.pdf`);
+            }
+        });
+
+        async function processWorkbook(workbook) {
+            try {
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                if (rawData.length === 0) {
+                    throw new Error("A planilha está vazia.");
+                }
+
+                // First row is headers
+                const headers = rawData[0].map(h => typeof h === 'string' ? h.trim() : '');
+                const data = [];
+                // Remaining rows are data
+                for (let i = 1; i < rawData.length; i++) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = rawData[i][index] || '';
+                    });
+                    data.push(row);
+                }
+
+                if (data.length === 0) {
+                    throw new Error("A planilha está vazia ou o formato está incorreto.");
+                }
+
+                // --- IDENTIFICAÇÃO DE COLUNAS FLEXÍVEL E MAIS ROBUSTA ---
+                const normalizeHeader = (header) => {
+                    return header.toLowerCase().replace(/[.\sº]+/g, '').trim();
+                };
+
+                const findHeader = (possibleNames) => {
+                    const normalizedHeaders = headers.map(h => normalizeHeader(h));
+                    for (const name of possibleNames) {
+                        const normalizedName = normalizeHeader(name);
+                        const foundIndex = normalizedHeaders.indexOf(normalizedName);
+                        if (foundIndex !== -1) {
+                            return headers[foundIndex];
+                        }
+                    }
+                    return null;
+                };
+
+                const orderIdKey = findHeader(['Nº de Pedido da Plataforma', 'Nº de Pedido', 'Pedido', 'N do Pedido']);
+                const productNameKey = findHeader(['Nome do Anúncio', 'Nome do Produto']);
+                const productQtyKey = findHeader(['Qtd. do Produto', 'Quantidade']); 
+                const productValueKey = findHeader(['Preço de Produto', 'Preço do Produto', 'Valor do Produto', 'Preco', 'Preço']);
+                const recipientNameKey = findHeader(['Nome do Destinatário', 'Nome do Comprador']);
+                const streetKey = findHeader(['Endereço do Destinatário', 'Endereço']);
+                const cityKey = findHeader(['Cidade']);
+                const stateKey = findHeader(['Estado']);
+                const cepKey = findHeader(['CEP']);
+                
+                // --- FIM DA IDENTIFICAÇÃO DE COLUNAS ---
+                
+                if (!orderIdKey || !productNameKey || !productValueKey || !recipientNameKey || !streetKey || !cityKey || !stateKey || !cepKey) {
+                    const missingCols = [];
+                    if (!orderIdKey) missingCols.push("'Nº de Pedido'");
+                    if (!productNameKey) missingCols.push("'Nome do Produto'");
+                    if (!productValueKey) missingCols.push("'Valor'");
+                    if (!recipientNameKey) missingCols.push("'Nome do Destinatário'");
+                    if (!streetKey) missingCols.push("'Endereço'");
+                    if (!cityKey) missingCols.push("'Cidade'");
+                    if (!stateKey) missingCols.push("'Estado'");
+                    if (!cepKey) missingCols.push("'CEP'");
+
+                    const headersFound = headers.join(', ');
+                    throw new Error(`Não foi possível encontrar uma ou mais colunas necessárias na sua planilha: ${missingCols.join(', ')}. As colunas encontradas foram: ${headersFound}. Verifique se os títulos das colunas estão corretos.`);
+                }
+                
+                await generateAllDeclarationsPdf(data, { orderIdKey, productNameKey, productQtyKey, productValueKey, recipientNameKey, streetKey, cityKey, stateKey, cepKey });
+
+            } catch (error) {
+                console.error("Erro ao processar o arquivo:", error);
+                errorText.innerText = error.message || "Ocorreu um erro inesperado ao processar o arquivo. Verifique se o arquivo é uma planilha válida.";
+                errorMessageDiv.classList.remove('hidden');
+                statusMessage.classList.add('hidden');
+            }
+        }
+
+        async function generateAllDeclarationsPdf(data, keys) {
+            const pdfDoc = await PDFDocument.create();
+            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+            const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+            const drawText = (page, text, x, y, size = 10, fontType, color = rgb(0, 0, 0), maxWidth = undefined, lineHeight = undefined) => {
+                return page.drawText(text, { x, y, size, font: fontType, color, maxWidth, lineHeight });
+            };
+            const drawTitle = (page, text, x, y, size = 12) => {
+                return drawText(page, text, x, y, size, boldFont);
+            };
+
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                const page = pdfDoc.addPage([595, 842]);
+                const { width, height } = page.getSize();
+                
+                // --- Caixa de Rastreamento (canto superior direito) ---
+                const trackingBoxX = width / 2;
+                const trackingBoxY = height - 50;
+                const trackingBoxWidth = width / 2 - 20;
+                const trackingBoxHeight = 110;
+                page.drawRectangle({
+                    x: trackingBoxX,
+                    y: trackingBoxY - trackingBoxHeight,
+                    width: trackingBoxWidth,
+                    height: trackingBoxHeight,
+                    borderColor: rgb(0, 0, 0),
+                    borderWidth: 1,
+                    
+                });
+                
+                drawText(page, `Pedido: ${row[keys.orderIdKey]}`, trackingBoxX + 10, trackingBoxY - 20, 10, font);
+                
+                // --- Título Principal (alinha na coluna da direita) ---
+                drawTitle(page, "DECLARAÇÃO DE CONTEÚDO", width / 2 + 30, height - 200, 16);
+
+                // --- Seção Remetente (canto superior esquerdo) ---
+                const senderX = 50;
+                const senderY = height - 50;
+                drawTitle(page, "REMETENTE", senderX, senderY);
+                drawText(page, `Nome: ${senderInfo.nome}`, senderX, senderY - 20, 10, font);
+                drawText(page, `Endereço: ${senderInfo.endereco}`, senderX, senderY - 35, 10, font);
+                drawText(page, `Cidade: ${senderInfo.cidade} - ${senderInfo.uf}`, senderX, senderY - 50, 10, font);
+                drawText(page, `CEP: ${senderInfo.cep}`, senderX, senderY - 65, 10, font);
+                drawText(page, `CPF/CNPJ: ${senderInfo.cpf_cnpj}`, senderX, senderY - 80, 10, font);
+
+                // --- Seção Destinatário ---
+                const recipientX = 50;
+                const recipientY = senderY - 120;
+                const recipientName = row[keys.recipientNameKey];
+                const recipientStreet = row[keys.streetKey];
+                const recipientCity = row[keys.cityKey];
+                const recipientState = row[keys.stateKey];
+                const recipientCep = row[keys.cepKey];
+                drawTitle(page, "DESTINATÁRIO", recipientX, recipientY);
+                drawText(page, `Nome: ${recipientName}`, recipientX, recipientY - 20, 10, font);
+                drawText(page, `Endereço: ${recipientStreet}`, recipientX, recipientY - 35, 10, font);
+                drawText(page, `Cidade: ${recipientCity} - ${recipientState}`, recipientX, recipientY - 50, 10, font);
+                drawText(page, `CEP: ${recipientCep}`, recipientX, recipientY - 65, 10, font);
+                drawText(page, `CPF/CNPJ: ''`, recipientX, recipientY - 80, 10, font);
+
+                // --- Seção de Identificação dos Bens ---
+                drawTitle(page, "IDENTIFICAÇÃO DOS BENS", 50, height - 310);
+                const tableY = height - 330;
+                const tableHeight = 100;
+                const totalY = tableY - tableHeight - 20;
+
+                // Headers
+                drawTitle(page, "ITEM", 55, tableY);
+                drawTitle(page, "CONTEÚDO", 100, tableY);
+                drawTitle(page, "QUANT.", 400, tableY);
+                drawTitle(page, "VALOR (R$)", 490, tableY);
+
+                // Table lines
+                page.drawLine({ start: { x: 50, y: tableY - 5 }, end: { x: 550, y: tableY - 5 }, thickness: 1 });
+                page.drawLine({ start: { x: 50, y: totalY }, end: { x: 550, y: totalY }, thickness: 1 });
+                page.drawLine({ start: { x: 50, y: tableY - 5 }, end: { x: 50, y: totalY }, thickness: 1 });
+                page.drawLine({ start: { x: 95, y: tableY - 5 }, end: { x: 95, y: totalY }, thickness: 1 });
+                page.drawLine({ start: { x: 395, y: tableY - 5 }, end: { x: 395, y: totalY }, thickness: 1 });
+                page.drawLine({ start: { x: 485, y: tableY - 5 }, end: { x: 485, y: totalY }, thickness: 1 });
+                page.drawLine({ start: { x: 550, y: tableY - 5 }, end: { x: 550, y: totalY }, thickness: 1 });
+
+                // Content rows
+                const productName = row[keys.productNameKey];
+                const productQty = keys.productQtyKey ? row[keys.productQtyKey] : '1';
+                const productValue = row[keys.productValueKey];
+                
+                drawText(page, `1`, 65, tableY - 20, 10, font);
+                
+                // Ajuste para quebra de linha do nome do produto
+                page.drawText(productName, {
+                    x: 105,
+                    y: tableY - 20,
+                    size: 10,
+                    font: font,
+                    maxWidth: 280, // Limita a largura do texto
+                    lineHeight: 12 // Adiciona espaçamento entre as linhas
+                });
+
+                drawText(page, productQty.toString(), 415, tableY - 20, 10, font);
+                drawText(page, productValue.toString(), 500, tableY - 20, 10, font);
+
+                // Totais
+                const totaisY = totalY - 20;
+                drawTitle(page, "TOTAIS", 400, totaisY);
+                drawText(page, "PESO TOTAL (kg)", 400, totaisY - 15, 10, font);
+                drawText(page, "0,000", 500, totaisY - 15, 10, font);
+
+                // --- Declaração ---
+                const declarationText = `Declaro que não me enquadro no conceito de contribuinte previsto no art. 4º da Lei Complementar nº 87/1996, uma vez que não realizo, com habitualidade ou em volume que caracterize intuito comercial, operações de circulação de mercadoria, ainda que se iniciem no exterior, ou estou dispensado da emissão da nota fiscal por força da legislação tributária vigente, responsabilizando-me, nos termos da lei e a quem de direito, por informações inverídicas. Declaro ainda que não estou postando conteúdo inflamável, explosivo, causador de combustão espontânea, tóxico, corrosivo, gás ou outro conteúdo que conste na lista de proibições e restrições disponível no site dos Correios: https://www.correios.com.br/enviar/proibicoes-e-restricoes/proibicoes-e-restricoes.`;
+                const declarationY = totaisY - 50;
+
+                const lastDeclarationLineYResult = page.drawText(declarationText, {
+                    x: 50,
+                    y: declarationY,
+                    size: 8,
+                    font: font,
+                    maxWidth: 500,
+                    lineHeight: 12,
+                });
+
+                const finalY = (lastDeclarationLineYResult && lastDeclarationLineYResult.y !== undefined) ? lastDeclarationLineYResult.y : declarationY - 80;
+                
+                // --- Assinatura ---
+                const signatureY = finalY - 40;
+                drawText(page, `Local: ${senderInfo.cidade} - ${senderInfo.uf}`, 50, signatureY, 10, font);
+                drawText(page, `Data: __/__/____`, 50, signatureY - 15, 10, font);
+                drawText(page, "________________________________________", 50, signatureY - 30, 10, font);
+                drawText(page, "Assinatura do Declarante/Remetente", 50, signatureY - 45, 10, font);
+            }
+            
+            generatedPdfBlob = new Blob([await pdfDoc.save()], { type: 'application/pdf' });
+            
+            // Cria a URL do Blob e define no iframe para visualização
+            const pdfUrl = URL.createObjectURL(generatedPdfBlob);
+            pdfViewer.src = pdfUrl;
+            
+            resultsDiv.classList.remove('hidden');
+            pdfViewerContainer.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
