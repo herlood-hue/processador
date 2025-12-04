@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processador de Planilhas v11.0 (Com Localização)</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* Variáveis CSS para Cores (Tema Claro) */
+        :root {
+            --color-background-light: #f0f4f8;
+            --color-background-card: white;
+            --color-text-primary: #1a202c;
+            --color-text-secondary: #334e68;
+            --color-text-tertiary: #718096;
+            --color-border: #e2e8f0;
+            --color-button-primary: #4c7cff;
+            --color-button-primary-hover: #3b6ae0;
+            --color-button-success: #48bb78;
+            --color-button-success-hover: #38a169;
+            --color-button-danger: #e53e3e;
+            --color-button-danger-hover: #c53030;
+            --color-button-warning: #d69e2e; /* Amarelo escuro */
+            --color-button-warning-hover: #b7791f;
+            --color-table-header-bg: #f7fafc;
+            --color-table-row-hover: #f9fbfd;
+            --color-message-info-bg: #e2e8f0;
+            --color-message-info-border: #cbd5e0;
+            --color-message-info-text: #4a5568;
+            --color-message-success-bg: #d4edda;
+            --color-message-success-border: #c3e6cb;
+            --color-message-success-text: #155724;
+            --color-message-error-bg: #f8d7da;
+            --color-message-error-border: #f5c6cb;
+            --color-message-error-text: #721c24;
+            --color-icon-mode: #ffc107;
+            --highlight-bg: #fffaf0; /* Fundo destaque para área de SKU */
+            --highlight-border: #fbd38d;
+        }
+
+        /* Variáveis CSS para Cores (Tema Escuro) */
+        body.dark-mode {
+            --color-background-light: #1a202c;
+            --color-background-card: #2d3748;
+            --color-text-primary: #edf2f7;
+            --color-text-secondary: #a0aec0;
+            --color-text-tertiary: #718096;
+            --color-border: #4a5568;
+            --color-button-primary: #63b3ed;
+            --color-button-primary-hover: #4299e1;
+            --color-button-success: #68d391;
+            --color-button-success-hover: #48bb78;
+            --color-button-danger: #fc8181;
+            --color-button-danger-hover: #e53e3e;
+            --color-button-warning: #ecc94b;
+            --color-button-warning-hover: #d69e2e;
+            --color-table-header-bg: #4a5568;
+            --color-table-row-hover: #4a5568;
+            --color-message-info-bg: #4a5568;
+            --color-message-info-border: #718096;
+            --color-message-info-text: #edf2f7;
+            --color-message-success-bg: #38a169;
+            --color-message-success-border: #48bb78;
+            --color-message-success-text: #edf2f7;
+            --color-message-error-bg: #e53e3e;
+            --color-message-error-border: #fc8181;
+            --color-message-error-text: #edf2f7;
+            --color-icon-mode: #f7fafc;
+            --highlight-bg: #2c261e;
+            --highlight-border: #b7791f;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: var(--color-background-light);
+            color: var(--color-text-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1400px; 
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .card-container {
+            background-color: var(--color-background-card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex: 1;
+            min-width: 300px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .left-panel {
+            flex-basis: 30%;
+        }
+
+        .right-panel {
+            flex-basis: 65%;
+            display: none;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: color 0.3s;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            text-align: center; 
+            margin-bottom: 0;
+            font-size: 1.5rem; 
+            flex-grow: 1; 
+        }
+
+        #darkModeToggleIcon {
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--color-icon-mode);
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        #darkModeToggleIcon:hover {
+            transform: scale(1.1);
+        }
+        
+        .left-panel .header-content {
+            margin-bottom: 0.5rem; 
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+        
+        .link-opener-group {
+            display: flex;
+            gap: 0.75rem; 
+            margin-bottom: 1rem; 
+            width: 100%;
+            justify-content: center;
+        }
+
+        .link-opener-group button {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.85rem;
+            flex-grow: 0;
+            width: auto;
+            min-width: unset;
+            background-color: var(--color-button-primary); 
+            color: white;
+            border: none;
+            border-radius: 0.4rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-opener-group button:hover {
+            background-color: var(--color-button-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .form-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* Estilo especial para a área de carga de SKU/Localização */
+        .form-group.highlight-section {
+            background-color: var(--highlight-bg);
+            border: 1px dashed var(--highlight-border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .upload-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            width: 100%;
+        }
+
+        .upload-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        label a {
+            color: var(--color-button-primary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        label a:hover {
+            text-decoration: underline;
+        }
+
+        .file-info {
+            font-size: 0.85em;
+            color: var(--color-text-tertiary);
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-top: 0.5rem;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-label {
+            background-color: var(--color-button-primary);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.3s ease;
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .file-label:hover {
+            background-color: var(--color-button-primary-hover);
+        }
+
+        /* Cor específica para o botão de carga de SKU */
+        .file-label.warning-bg {
+            background-color: var(--color-button-warning);
+        }
+        .file-label.warning-bg:hover {
+            background-color: var(--color-button-warning-hover);
+        }
+
+        .message-box {
+            background-color: var(--color-message-info-bg);
+            border: 1px solid var(--color-message-info-border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            color: var(--color-message-info-text);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        .message-box.success {
+            background-color: var(--color-message-success-bg);
+            border-color: var(--color-message-success-border);
+            color: var(--color-message-success-text);
+        }
+
+        .message-box.error {
+            background-color: var(--color-message-error-bg);
+            border-color: var(--color-message-error-border);
+            color: var(--color-message-error-text);
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            flex-wrap: wrap; 
+        }
+
+        .copy-button, .clear-button, #exportXLSButton {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            color: white;
+            flex-grow: 1; 
+            min-width: 120px;
+        }
+
+        #exportXLSButton, #copyAllButton {
+            background-color: var(--color-button-success);
+        }
+
+        #exportXLSButton:hover, #copyAllButton:hover {
+            background-color: var(--color-button-success-hover);
+        }
+
+        .upload-row .copy-button {
+             background-color: var(--color-button-primary);
+        }
+        .upload-row .copy-button:hover {
+             background-color: var(--color-button-primary-hover);
+        }
+
+        .clear-button {
+            background-color: var(--color-button-danger);
+        }
+        
+        .clear-button:hover {
+            background-color: var(--color-button-danger-hover);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            border: 1px solid var(--color-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap; 
+        }
+
+        thead {
+            background-color: var(--color-table-header-bg);
+        }
+        
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-border);
+            text-align: left;
+            color: var(--color-text-primary);
+            transition: color 0.3s;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        /* AJUSTES DE LARGURA DA TABELA */
+        td:nth-child(6), th:nth-child(6) {
+            max-width: 400px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        td:nth-child(9), th:nth-child(9) { 
+            white-space: normal;
+            max-width: 120px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: bold; /* Destaque para a coluna SKU/Localização */
+            color: #d69e2e; /* Amarelo/Laranja para indicar que pode ser localização */
+        }
+
+        body.dark-mode td:nth-child(9) {
+            color: #ecc94b;
+        }
+
+        td:nth-child(1), th:nth-child(1) { 
+            max-width: 60px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        td:nth-child(7), th:nth-child(7) { 
+            max-width: 70px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        td:nth-child(3), th:nth-child(3) { 
+            max-width: 80px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        td:nth-child(2), th:nth-child(2), 
+        td:nth-child(4), th:nth-child(4), 
+        td:nth-child(5), th:nth-child(5), 
+        td:nth-child(8), th:nth-child(8), 
+        td:nth-child(10), th:nth-child(10) { 
+            max-width: 100px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        tbody tr:hover {
+            background-color: var(--color-table-row-hover);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .button-group {
+                justify-content: space-between;
+            }
+            .copy-button, .clear-button, #exportXLSButton {
+                flex-grow: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="card-container left-panel">
+        <div class="header-content">
+            <h1>Processador v11.0</h1>
+            <span id="darkModeToggleIcon">🌙</span>
+        </div>
+
+        <div class="link-opener-group">
+            <button id="openSitesButton">Abrir Sites</button>
+            <button id="openSheetsButton">Abrir Planilhas</button>
+        </div>
+
+        <div class="input-area">
+            
+            <div class="form-group highlight-section">
+                <label style="color: var(--color-button-warning);">
+                    📁 Base de SKUs (Localização)
+                    <span class="file-info">(Mapeia SKU -> Cód. Interno)</span>
+                </label>
+                <div class="upload-row">
+                    <div class="file-input-wrapper">
+                        <label for="locationFileInput" class="file-label warning-bg" id="locationFileLabel">Carregar Base</label>
+                        <input type="file" id="locationFileInput" accept=".csv, .xlsx, .xls">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <a href="https://seller.shopee.com.br/" target="_blank">Shopee</a>
+                    <span class="file-info">(<a href="https://seller.shopee.com.br/portal/sale/order?type=toship&source=to_process&invoice_status=all_type&sort_by=ship_by_date_asc" target="_blank">Order.toship</a>)</span>
+                </label>
+                <div class="upload-row">
+                    <div class="file-input-wrapper">
+                        <label for="shopeeFileInput" class="file-label" id="shopeeFileLabel">Escolher Arquivo(s)</label>
+                        <input type="file" id="shopeeFileInput" accept=".csv, .xlsx, .xls" multiple>
+                    </div>
+                    <button class="copy-button" id="copyShopeeButton">Copiar dados</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <a href="https://www.mercadolivre.com.br/resumo/v2" target="_blank">Mercado Livre</a>
+                    <span class="file-info">(<a href="https://www.mercadolivre.com.br/vendas/omni/lista?filters=TAB_TODAY#type=recent" target="_blank">Vendas_BR...</a>)</span>
+                </label>
+                <div class="upload-row">
+                    <div class="file-input-wrapper">
+                        <label for="mercadolivreFileInput" class="file-label" id="mercadolivreFileLabel">Escolher Arquivo(s)</label>
+                        <input type="file" id="mercadolivreFileInput" accept=".csv, .xlsx, .xls" multiple>
+                    </div>
+                    <button class="copy-button" id="copyMercadoLivreButton">Copiar dados</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <a href="https://sellercentral.amazon.com.br/orders-v3/mfn/unshipped/ref=bb_myo_wos3_home?_encoding=UTF8&sort=status_desc&shipByDate=all&communicationDeliveryId=f8937b2e-f06a-481d-956b-bacf115b9744&page=1" target="_blank">Amazon</a>
+                    <span class="file-info">(<a href="https://app.upseller.com/pt/order/to-ship" target="_blank">Export_Order</a>)</span>
+                </label>
+                <div class="upload-row">
+                    <div class="file-input-wrapper">
+                        <label for="amazonFileInput" class="file-label" id="amazonFileLabel">Escolher Arquivo(s)</label>
+                        <input type="file" id="amazonFileInput" accept=".csv, .xlsx, .xls" multiple>
+                    </div>
+                    <button class="copy-button" id="copyAmazonButton">Copiar dados</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <a href="https://painel.estantevirtual.com.br/vendas" target="_blank">Estante Virtual</a>
+                    <span class="file-info">(<a href="https://livreiro.estantevirtual.com.br/vendas?termo=&periodo=total&status=standby&forma_pagamento=todas&carrier=&envio=" target="_blank">vendas_data</a>)</span>
+                </label>
+                <div class="upload-row">
+                    <div class="file-input-wrapper">
+                        <label for="estanteFileInput" class="file-label" id="estanteFileLabel">Escolher Arquivo(s)</label>
+                        <input type="file" id="estanteFileInput" accept=".csv, .xlsx, .xls" multiple>
+                    </div>
+                    <button class="copy-button" id="copyEstanteButton">Copiar dados</button>
+                </div>
+            </div>
+            
+            <p class="message-box" id="messageBox">Carregue um arquivo para começar.</p>
+        </div>
+    </div>
+    
+    <div class="card-container right-panel" id="resultsPanel">
+        <div class="results-container">
+            <div class="button-group">
+                <button class="clear-button" id="clearButton">Limpar Tabela</button>
+                <button class="copy-button" id="exportXLSButton">Salvar XLS</button>
+                <button class="copy-button" id="copyAllButton">Copiar Tudo</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead id="tableHeader">
+                        <tr>
+                            <th>Site</th>
+                            <th>ID do Pedido</th>
+                            <th>Produto (R$)</th>
+                            <th>Frete (R$)</th>
+                            <th>Valor Total (R$)</th>
+                            <th>Nome do Produto</th>
+                            <th>Status</th>
+                            <th>Código</th>
+                            <th>SKU / Local</th>
+                            <th>Custo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInputMap = {
+            amazon: { input: document.getElementById('amazonFileInput'), label: document.getElementById('amazonFileLabel') },
+            shopee: { input: document.getElementById('shopeeFileInput'), label: document.getElementById('shopeeFileLabel') },
+            estante_virtual: { input: document.getElementById('estanteFileInput'), label: document.getElementById('estanteFileLabel') },
+            mercadolivre: { input: document.getElementById('mercadolivreFileInput'), label: document.getElementById('mercadolivreFileLabel') }
+        };
+        
+        // Novo Input para Localização
+        const locationInput = document.getElementById('locationFileInput');
+        const locationLabel = document.getElementById('locationFileLabel');
+
+        const messageBox = document.getElementById('messageBox');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const dataTableBody = document.getElementById('dataTableBody');
+        const copyAllButton = document.getElementById('copyAllButton');
+        const clearButton = document.getElementById('clearButton');
+        const copyAmazonButton = document.getElementById('copyAmazonButton');
+        const copyShopeeButton = document.getElementById('copyShopeeButton');
+        const copyEstanteButton = document.getElementById('copyEstanteButton');
+        const copyMercadoLivreButton = document.getElementById('copyMercadoLivreButton');
+        const darkModeToggleIcon = document.getElementById('darkModeToggleIcon');
+        const exportXLSButton = document.getElementById('exportXLSButton'); 
+        
+        const openSitesButton = document.getElementById('openSitesButton');
+        const openSheetsButton = document.getElementById('openSheetsButton');
+
+        // MAPA GLOBAL PARA ARMAZENAR SKU -> LOCALIZAÇÃO
+        let skuLocationMap = new Map();
+
+        const SITES_URLS = [
+            'https://seller.shopee.com.br/',
+            'https://www.mercadolivre.com.br/resumo/v2',
+            'https://sellercentral.amazon.com.br/orders-v3/mfn/unshipped/ref=bb_myo_wos3_home?_encoding=UTF8&sort=status_desc&shipByDate=all&communicationDeliveryId=f8937b2e-f06a-481d-956b-bacf115b9744&page=1',
+            'https://painel.estantevirtual.com.br/vendas'
+        ];
+
+        const SHEETS_URLS = [
+            'https://seller.shopee.com.br/portal/sale/order?type=toship&source=to_process&invoice_status=all_type&sort_by=ship_by_date_asc',
+            'https://www.mercadolivre.com.br/vendas/omni/lista?filters=TAB_TODAY#type=recent',
+            'https://app.upseller.com/pt/order/to-ship', 
+            'https://livreiro.estantevirtual.com.br/vendas?termo=&periodo=total&status=standby&forma_pagamento=todas&carrier=&envio='
+        ];
+        
+        function openLinksInNewTabs(urls) {
+            if (urls.length === 0) return;
+            window.open(urls[0], '_blank');
+            for (let i = 1; i < urls.length; i++) {
+                setTimeout(() => {
+                    window.open(urls[i], '_blank');
+                }, 100 * i);
+            }
+            showMessage(`${urls.length} links abertos em novas abas.`, 'info');
+        }
+        
+        openSitesButton.addEventListener('click', () => openLinksInNewTabs(SITES_URLS));
+        openSheetsButton.addEventListener('click', () => openLinksInNewTabs(SHEETS_URLS));
+
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            darkModeToggleIcon.innerHTML = '☀️';
+        } else {
+            darkModeToggleIcon.innerHTML = '🌙';
+        }
+
+        darkModeToggleIcon.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                darkModeToggleIcon.innerHTML = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                darkModeToggleIcon.innerHTML = '🌙';
+            }
+        });
+
+        // Listeners Arquivos Vendas
+        fileInputMap.amazon.input.addEventListener('change', (e) => handleFileSelect(e.target.files, 'amazon'));
+        fileInputMap.shopee.input.addEventListener('change', (e) => handleFileSelect(e.target.files, 'shopee'));
+        fileInputMap.estante_virtual.input.addEventListener('change', (e) => handleFileSelect(e.target.files, 'estante_virtual'));
+        fileInputMap.mercadolivre.input.addEventListener('change', (e) => handleFileSelect(e.target.files, 'mercadolivre'));
+        
+        // Listener Arquivo Localização
+        locationInput.addEventListener('change', handleLocationFile);
+
+        // Listeners Botões
+        copyAllButton.addEventListener('click', () => copyTableData(null));
+        clearButton.addEventListener('click', clearTable);
+        copyAmazonButton.addEventListener('click', () => copyTableData('AZ'));
+        copyShopeeButton.addEventListener('click', () => copyTableData('SH'));
+        copyEstanteButton.addEventListener('click', () => copyTableData('EV'));
+        copyMercadoLivreButton.addEventListener('click', () => copyTableData('ML'));
+        exportXLSButton.addEventListener('click', exportToXLS);
+        
+        function showMessage(text, type = 'info') {
+            messageBox.innerText = text;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearTable() {
+            dataTableBody.innerHTML = '';
+            resultsPanel.style.display = 'none';
+            Object.values(fileInputMap).forEach(item => {
+                item.input.value = '';
+                item.label.innerText = 'Escolher Arquivo(s)';
+            });
+            showMessage('Tabela limpa. Carregue um novo arquivo para continuar.');
+        }
+
+        // --- LÓGICA DE PROCESSAMENTO DE LOCALIZAÇÃO (BASEADO NO TESTE DAV10) ---
+        function handleLocationFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            locationLabel.innerText = "Carregando...";
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // Limpa mapa anterior
+                    skuLocationMap.clear();
+                    let skuColIndex = -1;
+                    let locColIndex = -1;
+
+                    // Procura cabeçalhos dinamicamente
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row && row.includes('SKU') && row.includes('Cód. Interno')) {
+                            skuColIndex = row.indexOf('SKU');
+                            locColIndex = row.indexOf('Cód. Interno');
+                            break;
+                        }
+                    }
+
+                    if (skuColIndex === -1 || locColIndex === -1) {
+                        showMessage("Colunas 'SKU' ou 'Cód. Interno' não encontradas na base.", 'error');
+                        locationLabel.innerText = "Erro no Arquivo";
+                        return;
+                    }
+
+                    let count = 0;
+                    // Itera para preencher o MAP
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row) continue;
+                        const rawSku = row[skuColIndex];
+                        const rawLoc = row[locColIndex];
+
+                        if (rawSku && rawLoc) {
+                            const sku = String(rawSku).split('.')[0].trim(); // Remove decimais se houver
+                            const loc = String(rawLoc).trim();
+                            // Armazena no mapa
+                            skuLocationMap.set(sku, loc);
+                            count++;
+                        }
+                    }
+
+                    locationLabel.innerText = `${count} SKUs mapeados`;
+                    locationLabel.classList.add('warning-bg'); // Mantém cor de destaque
+                    showMessage(`Base carregada com sucesso! ${count} SKUs prontos para cruzar.`, 'success');
+                    
+                    // Se já houver dados na tabela, tenta atualizar
+                    if (dataTableBody.children.length > 0) {
+                        updateExistingTableRows();
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    showMessage("Erro ao ler arquivo de localização.", 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // Função auxiliar para consultar o mapa
+        function getSkuOrLocation(originalSku) {
+            if (!originalSku) return '';
+            // Limpeza básica para garantir match
+            const cleanSku = String(originalSku).trim();
+            
+            if (skuLocationMap.has(cleanSku)) {
+                return skuLocationMap.get(cleanSku); // Retorna a localização (Cód. Interno)
+            }
+            return originalSku; // Retorna o SKU original se não achar
+        }
+        
+        // Atualiza linhas já existentes na tabela se carregar a base depois
+        function updateExistingTableRows() {
+            // Essa função é complexa porque o HTML já perdeu o SKU original se ele não foi guardado.
+            // O ideal é recarregar as planilhas de vendas, mas podemos tentar fazer o update 
+            // assumindo que o que está na célula 9 é um SKU.
+            const rows = dataTableBody.querySelectorAll('tr');
+            let updatedCount = 0;
+            
+            rows.forEach(row => {
+                const skuCell = row.cells[8]; // Índice 8 é a coluna SKU
+                const currentText = skuCell.innerText;
+                
+                // Só tenta atualizar se não parecer uma descrição complexa (ex: "COM 2...")
+                // Se for um SKU simples, tenta achar no mapa
+                if (currentText && !currentText.includes('COM ') && !currentText.includes('QUANTIDADE')) {
+                   if (skuLocationMap.has(currentText)) {
+                       skuCell.innerText = skuLocationMap.get(currentText);
+                       updatedCount++;
+                   }
+                }
+            });
+            if (updatedCount > 0) {
+                showMessage(`Tabela atualizada: ${updatedCount} SKUs substituídos por localização.`, 'success');
+            }
+        }
+
+        // --- PROCESSAMENTO DE ARQUIVOS DE VENDAS ---
+        function handleFileSelect(files, platform) {
+            if (files.length === 0) {
+                fileInputMap[platform].label.innerText = 'Nenhum arquivo selecionado';
+                return;
+            }
+
+            const fileLabel = fileInputMap[platform].label;
+            fileLabel.innerText = `${files.length} arquivo(s) selecionado(s)`;
+            
+            showMessage(`Processando ${files.length} arquivo(s) da plataforma ${platform}...`);
+            resultsPanel.style.display = 'flex';
+
+            const allFilePromises = Array.from(files).map(file => {
+                return new Promise((resolve, reject) => {
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        try {
+                            let rows = [];
+                            if (fileExtension === 'csv') {
+                                rows = e.target.result.split('\n').map(row => parseCSVRow(row));
+                            } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                                const data = new Uint8Array(e.target.result);
+                                const workbook = XLSX.read(data, { type: 'array' });
+                                const firstSheetName = workbook.SheetNames[0];
+                                const worksheet = workbook.Sheets[firstSheetName];
+                                rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                            }
+                            
+                            if (rows.length > 1) {
+                                processRows(rows, platform);
+                            }
+                            resolve();
+                        } catch (error) {
+                            reject(`Erro ao processar o arquivo ${file.name}: ${error.message}`);
+                        }
+                    };
+                    reader.onerror = function() { reject(`Erro na leitura do arquivo ${file.name}.`); };
+                    
+                    if (fileExtension === 'csv') reader.readAsText(file);
+                    else reader.readAsArrayBuffer(file);
+                });
+            });
+
+            Promise.allSettled(allFilePromises).then(results => {
+                const errors = results.filter(r => r.status === 'rejected');
+                if (errors.length > 0) {
+                    showMessage(`Alguns arquivos falharam: \n${errors.map(e => e.reason).join('\n')}`, 'error');
+                } else {
+                    showMessage(`Processamento de ${platform} concluído.`, 'success');
+                }
+            });
+        }
+
+        function processRows(rows, selectedPlatform) {
+            const platformCode = {
+                amazon: 'AZ',
+                shopee: 'SH',
+                estante_virtual: 'EV',
+                mercadolivre: 'ML'
+            }[selectedPlatform];
+
+            let rowsToProcess = rows.slice(1);
+            
+            // --- SHOPEE ---
+            if (selectedPlatform === 'shopee') {
+                const orders = {};
+                for (let i = 1; i < rows.length; i++) {
+                    const columns = rows[i];
+                    if (!columns || columns.length === 0 || !columns[0]) continue;
+                    
+                    const orderId = String(columns[0]).trim();
+                    
+                    if (!orders[orderId]) {
+                        orders[orderId] = {
+                            totalPreco: 0,
+                            produtos: [],
+                            itemsSkuVariacao: [], 
+                            totalQuantidade: 0, 
+                            count: 0, 
+                            custoAN: parseFloat(String(columns[39] || '0').trim().replace(',', '.')), 
+                            custoAO: parseFloat(String(columns[40] || '0').trim().replace(',', '.'))
+                        };
+                    }
+
+                    const preco = parseFloat(String(columns[18] || '0').trim().replace(',', '.')); 
+                    const quantidade = parseInt(String(columns[16] || '1').trim(), 10); 
+
+                    orders[orderId].totalPreco += isNaN(preco) ? 0 : preco;
+                    orders[orderId].totalQuantidade += isNaN(quantidade) ? 1 : quantidade; 
+                    
+                    const nomeProduto = String(columns[11] || '').trim(); 
+                    const sku = String(columns[12] || '').trim(); 
+                    const variacao = String(columns[13] || '').trim(); 
+                    
+                    if (nomeProduto) orders[orderId].produtos.push(nomeProduto);
+                    
+                    let itemDisplay = '';
+                    if (sku) {
+                        // AQUI A MÁGICA: Verifica se tem localização
+                        itemDisplay = getSkuOrLocation(sku);
+                    } else if (variacao) {
+                        itemDisplay = variacao; // Variação geralmente não tem SKU mapeado direto, mas se tiver, poderia checar
+                    }
+
+                    if (itemDisplay) {
+                        orders[orderId].itemsSkuVariacao.push(`${itemDisplay} (x${quantidade})`);
+                    } else if (quantidade > 1) {
+                         orders[orderId].itemsSkuVariacao.push(`SEM SKU (x${quantidade})`);
+                    }
+
+                    orders[orderId].count++; 
+                }
+
+                Object.keys(orders).forEach(orderId => {
+                    const orderData = orders[orderId];
+                    const valorFrete = 0;
+                    const valorTotal = (orderData.totalPreco + valorFrete).toFixed(2);
+                    const nomeProdutoConcatenado = orderData.produtos.join(' ; ');
+                    
+                    let skuDisplay = '';
+                    
+                    if (orderData.count > 1) {
+                        const itemsList = orderData.itemsSkuVariacao.join('<br>');
+                        skuDisplay = `COM ${orderData.count}<br>${itemsList}`;
+                    } else if (orderData.count === 1) {
+                        if (orderData.totalQuantidade > 1) {
+                            skuDisplay = `QUANTIDADE ${orderData.totalQuantidade}`;
+                        } else if (orderData.itemsSkuVariacao.length > 0) {
+                            skuDisplay = orderData.itemsSkuVariacao[0].replace(' (x1)', '');
+                        } else {
+                            skuDisplay = `QUANTIDADE 1`;
+                        }
+                    }
+                    
+                    const custoFinal = (orderData.totalPreco - (orderData.custoAN + orderData.custoAO)).toFixed(2);
+
+                    addTableRow(platformCode, orderId, orderData.totalPreco, valorFrete, valorTotal, nomeProdutoConcatenado, 'PAGO', platformCode, skuDisplay, custoFinal);
+                });
+
+            // --- ESTANTE VIRTUAL ---
+            } else if (selectedPlatform === 'estante_virtual') {
+                const orders = {};
+                for (let i = 0; i < rowsToProcess.length; i++) {
+                    const columns = rowsToProcess[i];
+                    if (!columns || !columns[15]) continue;
+
+                    const destinatario = String(columns[15]).trim();
+                    const preco = parseFloat(String(columns[30] || '0').trim().replace(',', '.'));
+                    const frete = parseFloat(String(columns[28] || '0').trim().replace(',', '.'));
+                    const nomeProduto = String(columns[7] || '').trim();
+                    const tipoFrete = String(columns[25] || '').trim().toLowerCase();
+                    const skuMatch = String(columns[10] || '').trim().match(/SKU: (\d+)/);
+                    const originalSku = skuMatch ? skuMatch[1] : '';
+
+                    if (!orders[destinatario]) {
+                        orders[destinatario] = {
+                            totalPreco: 0,
+                            frete: frete,
+                            tipoFrete: tipoFrete,
+                            produtos: [],
+                            count: 0,
+                            sku: originalSku
+                        };
+                    }
+                    
+                    orders[destinatario].totalPreco += isNaN(preco) ? 0 : preco;
+                    if (nomeProduto) orders[destinatario].produtos.push(nomeProduto);
+                    orders[destinatario].count++;
+                }
+                
+                Object.keys(orders).forEach(destinatario => {
+                    const orderData = orders[destinatario];
+                    const freteFinal = (orderData.tipoFrete.includes('sedex')) ? 0 : (orderData.frete - 4.29);
+                    const valorTotal = (orderData.totalPreco + freteFinal).toFixed(2);
+                    
+                    // AQUI A MÁGICA
+                    let finalSku = orderData.sku;
+                    if (orderData.count === 1) {
+                        finalSku = getSkuOrLocation(orderData.sku);
+                    } else {
+                        finalSku = `com ${orderData.count}`;
+                    }
+
+                    addTableRow(platformCode, destinatario, orderData.totalPreco, freteFinal, valorTotal, orderData.produtos.join(' ; '), 'PAGO', platformCode, finalSku, '');
+                });
+
+            // --- MERCADO LIVRE ---
+            } else if (selectedPlatform === 'mercadolivre') {
+                const orders = {};
+                const startRow = 6;
+                for (let i = startRow; i < rows.length; i++) {
+                    const columns = rows[i];
+                    if (!columns || !columns[0]) continue;
+                    
+                    const orderId = String(columns[0]).trim(); 
+                    const preco = parseFloat(String(columns[7] || '0').trim().replace(',', '.')); 
+                    const nomeProduto = String(columns[22] || '').trim(); 
+                    const custo = parseFloat(String(columns[16] || '0').trim().replace(',', '.'));
+                    const sku = String(columns[19] || '').trim();
+
+                    if (!orders[orderId]) {
+                        orders[orderId] = {
+                            totalPreco: 0,
+                            totalCusto: 0,
+                            produtos: [],
+                            sku: sku 
+                        };
+                    }
+
+                    orders[orderId].totalPreco += isNaN(preco) ? 0 : preco;
+                    orders[orderId].totalCusto += isNaN(custo) ? 0 : custo; 
+                    if (nomeProduto) orders[orderId].produtos.push(nomeProduto);
+                }
+                
+                Object.keys(orders).forEach(orderId => {
+                    const orderData = orders[orderId];
+                    const valorFrete = 0;
+                    const valorTotal = (orderData.totalPreco + valorFrete).toFixed(2);
+                    
+                    // AQUI A MÁGICA
+                    let skuDisplay = '';
+                    if (orderData.produtos.length === 1) {
+                        skuDisplay = getSkuOrLocation(orderData.sku);
+                    }
+
+                    addTableRow(platformCode, orderId, orderData.totalPreco, valorFrete, valorTotal, orderData.produtos.join(' ; '), 'PAGO', platformCode, skuDisplay, orderData.totalCusto.toFixed(2));
+                });
+
+            // --- AMAZON (Generic Fallback for single line items) ---
+            } else {
+                for (let i = 0; i < rowsToProcess.length; i++) {
+                    const columns = rowsToProcess[i];
+                    if (!columns || !columns[0]) continue;
+                    
+                    if (selectedPlatform === 'amazon' && columns.length > 33) {
+                        const colA = String(columns[0] || '').trim();
+                        const colQ = String(columns[16] || '').trim().replace(',', '.');
+                        const colAG = String(columns[32] || '').trim().replace(',', '.');
+                        const colAC = String(columns[28] || '').trim();
+                        const colAD = String(columns[29] || '').trim(); // SKU
+
+                        const valorPedido = parseFloat(colQ);
+                        const preco = parseFloat(colAG);
+
+                        if (isNaN(valorPedido) || isNaN(preco)) continue;
+
+                        const frete = (valorPedido - preco).toFixed(2);
+                        const valorTotal = (preco + parseFloat(frete)).toFixed(2);
+                        const custo = (parseFloat(valorTotal) * 0.85).toFixed(2);
+                        
+                        // AQUI A MÁGICA
+                        const skuOrLoc = getSkuOrLocation(colAD);
+
+                        addTableRow(platformCode, colA, preco, frete, valorTotal, colAC, 'PAGO', platformCode, skuOrLoc, custo);
+                    }
+                }
+            }
+        }
+        
+        // Helper para adicionar linha na tabela
+        function addTableRow(plat, id, prod, fret, total, nome, status, cod, sku, custo) {
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-platform', plat);
+            // Formatação segura de números
+            const safeNum = (n) => typeof n === 'number' ? n.toFixed(2).replace('.', ',') : String(n).replace('.', ',');
+            
+            tr.innerHTML = `
+                <td>${plat}</td>
+                <td>${id}</td>
+                <td>${safeNum(prod)}</td>
+                <td>${safeNum(fret)}</td>
+                <td>${String(total).replace('.', ',')}</td>
+                <td>${nome}</td>
+                <td>${status}</td>
+                <td>${cod}</td>
+                <td>${sku}</td>
+                <td>${String(custo).replace('.', ',')}</td>
+            `;
+            dataTableBody.appendChild(tr);
+        }
+
+        function parseCSVRow(row) {
+            const result = [];
+            let inQuote = false;
+            let currentField = '';
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                if (char === '"') {
+                    inQuote = !inQuote;
+                } else if (char === ',' && !inQuote) {
+                    result.push(currentField);
+                    currentField = '';
+                } else {
+                    currentField += char;
+                }
+            }
+            result.push(currentField);
+            return result;
+        }
+
+        function getFilteredTableData(platformCode, includeHeader) {
+            const table = document.getElementById('resultsPanel').querySelector('table');
+            const data = [];
+            
+            if (includeHeader) {
+                const headerRow = table.querySelector('thead tr');
+                const headerData = Array.from(headerRow.querySelectorAll('th')).slice(1).map(th => th.innerText.trim());
+                data.push(headerData);
+            }
+
+            const rows = platformCode
+                ? table.querySelectorAll(`tbody tr[data-platform="${platformCode}"]`)
+                : table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const rowData = Array.from(row.querySelectorAll('td')).slice(1).map(td => 
+                    td.innerHTML.replace(/<br>/g, ' ').replace(/&nbsp;/g, ' ').trim()
+                );
+                data.push(rowData);
+            });
+
+            return data;
+        }
+
+        async function copyTableData(platformCode) {
+            const dataArray = getFilteredTableData(platformCode, false);
+
+            if (dataArray.length === 0) {
+                showMessage('Nenhum dado para copiar.', 'info');
+                return;
+            }
+            const dataToCopy = dataArray.map(row => row.join('\t')).join('\n');
+
+            try {
+                await navigator.clipboard.writeText(dataToCopy);
+                showMessage('Dados copiados para a área de transferência!', 'success');
+            } catch (err) {
+                try {
+                    const tempInput = document.createElement('textarea');
+                    tempInput.value = dataToCopy;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showMessage('Dados copiados (método alternativo)', 'success');
+                } catch (fallbackErr) {
+                    showMessage('Falha ao copiar.', 'error');
+                }
+            }
+        }
+        
+        function exportToXLS() {
+            const dataArray = getFilteredTableData(null, true); 
+            if (dataArray.length <= 1) { 
+                showMessage('Nenhum dado para exportar.', 'info');
+                return;
+            }
+            try {
+                const ws = XLSX.utils.aoa_to_sheet(dataArray);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Dados");
+                XLSX.writeFile(wb, "DadosProcessados.xls");
+                showMessage('Dados exportados com sucesso!', 'success');
+            } catch (e) {
+                showMessage(`Falha ao exportar: ${e.message}`, 'error');
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
