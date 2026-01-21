@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processador de Planilhas v11.5 (Otimizado)</title>
+    <title>Processador de Planilhas v11.8</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
-        /* CSS Mantido idêntico à v11.4 */
         :root { --color-background-light: #f0f4f8; --color-background-card: white; --color-text-primary: #1a202c; --color-text-secondary: #334e68; --color-text-tertiary: #718096; --color-border: #e2e8f0; --color-button-primary: #4c7cff; --color-button-success: #48bb78; --color-button-danger: #e53e3e; --color-button-warning: #d69e2e; --color-table-header-bg: #f7fafc; --color-icon-mode: #ffc107; --highlight-bg: #fffaf0; --highlight-border: #fbd38d; }
         body.dark-mode { --color-background-light: #1a202c; --color-background-card: #2d3748; --color-text-primary: #edf2f7; --color-text-secondary: #a0aec0; --color-text-tertiary: #718096; --color-border: #4a5568; --color-button-primary: #63b3ed; --color-button-success: #68d391; --color-button-danger: #fc8181; --color-table-header-bg: #4a5568; --color-icon-mode: #f7fafc; --highlight-bg: #2c261e; --highlight-border: #b7791f; }
         body { font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; background-color: var(--color-background-light); color: var(--color-text-secondary); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
@@ -25,6 +24,10 @@
         .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
         .file-label { background-color: var(--color-button-primary); color: white; font-weight: 600; text-align: center; display: block; padding: 0.75rem 1rem; border-radius: 0.5rem; }
         .file-label.warning-bg { background-color: var(--color-button-warning); }
+        label { font-weight: 600; color: var(--color-text-secondary); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;}
+        label a { color: var(--color-button-primary); text-decoration: none; transition: color 0.3s; }
+        label a:hover { text-decoration: underline; color: var(--color-button-primary-hover); }
+        .file-info { font-size: 0.85em; color: var(--color-text-tertiary); font-weight: normal; font-style: italic; }
         .message-box { background-color: var(--color-message-info-bg); border: 1px solid var(--color-message-info-border); border-radius: 0.5rem; padding: 1rem; text-align: center; }
         .button-group { display: flex; gap: 0.75rem; justify-content: flex-end; margin-bottom: 1rem; }
         .copy-button, .clear-button { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; color: white; }
@@ -43,7 +46,7 @@
 <div class="main-container">
     <div class="card-container left-panel">
         <div class="header-content">
-            <h1>Processador v11.5</h1>
+            <h1>Processador v11.8</h1>
             <span id="darkModeToggleIcon">🌙</span>
         </div>
 
@@ -64,7 +67,10 @@
             </div>
 
             <div class="form-group">
-                <label>Shopee</label>
+                <label>
+                    <a href="https://seller.shopee.com.br/" target="_blank">Shopee</a>
+                    <span class="file-info">(<a href="https://seller.shopee.com.br/portal/sale/order?type=toship&source=to_process&invoice_status=all_type&sort_by=ship_by_date_asc" target="_blank">Order.toship</a>)</span>
+                </label>
                 <div class="upload-row">
                     <div class="file-input-wrapper">
                         <label for="shopeeFileInput" class="file-label" id="shopeeFileLabel">Escolher Arquivo</label>
@@ -75,7 +81,10 @@
             </div>
 
             <div class="form-group">
-                <label>Mercado Livre</label>
+                <label>
+                    <a href="https://www.mercadolivre.com.br/resumo/v2" target="_blank">Mercado Livre</a>
+                    <span class="file-info">(<a href="https://www.mercadolivre.com.br/vendas/omni/lista?filters=TAB_TODAY#type=recent" target="_blank">Vendas_BR...</a>)</span>
+                </label>
                 <div class="upload-row">
                     <div class="file-input-wrapper">
                         <label for="mercadolivreFileInput" class="file-label" id="mercadolivreFileLabel">Escolher Arquivo</label>
@@ -86,7 +95,10 @@
             </div>
 
             <div class="form-group">
-                <label>Amazon</label>
+                <label>
+                    <a href="https://sellercentral.amazon.com.br/orders-v3/mfn/unshipped/ref=bb_myo_wos3_home?_encoding=UTF8&sort=status_desc&shipByDate=all&communicationDeliveryId=f8937b2e-f06a-481d-956b-bacf115b9744&page=1" target="_blank">Amazon</a>
+                    <span class="file-info">(<a href="https://app.upseller.com/pt/order/to-ship" target="_blank">Export_Order</a>)</span>
+                </label>
                 <div class="upload-row">
                     <div class="file-input-wrapper">
                         <label for="amazonFileInput" class="file-label" id="amazonFileLabel">Escolher Arquivo</label>
@@ -97,7 +109,10 @@
             </div>
             
             <div class="form-group">
-                <label>Estante Virtual</label>
+                <label>
+                    <a href="https://painel.estantevirtual.com.br/vendas" target="_blank">Estante Virtual</a>
+                    <span class="file-info">(<a href="https://livreiro.estantevirtual.com.br/vendas?termo=&periodo=total&status=standby&forma_pagamento=todas&carrier=&envio=" target="_blank">vendas_data</a>)</span>
+                </label>
                 <div class="upload-row">
                     <div class="file-input-wrapper">
                         <label for="estanteFileInput" class="file-label" id="estanteFileLabel">Escolher Arquivo</label>
@@ -146,24 +161,20 @@
         const resultsPanel = document.getElementById('resultsPanel');
         const messageBox = document.getElementById('messageBox');
 
-        // --- Helpers de Formatação e Parsing ---
         const formatNumber = (val) => {
             if (val === '' || val == null) return '';
             const num = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
             return isNaN(num) ? val : num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
-
         const parseMoney = (val) => parseFloat(String(val || '0').replace(',', '.')) || 0;
-        const parseString = (val) => String(val || '').trim();
+        const parseString = (val) => String(val != null ? val : '').trim();
 
-        // --- Dark Mode ---
         const darkModeToggleIcon = document.getElementById('darkModeToggleIcon');
         darkModeToggleIcon.onclick = () => {
             document.body.classList.toggle('dark-mode');
             darkModeToggleIcon.innerHTML = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         };
 
-        // --- Lógica de SKU / Localização ---
         document.getElementById('locationFileInput').onchange = (e) => {
             if (!e.target.files[0]) return;
             const reader = new FileReader();
@@ -171,19 +182,13 @@
                 const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
                 let skuIdx = -1, locIdx = -1;
-                
-                // Busca dinâmica de colunas
                 for(let row of rows) {
                     if (row && row.includes('SKU') && row.includes('Cód. Interno')) {
-                        skuIdx = row.indexOf('SKU'); locIdx = row.indexOf('Cód. Interno');
-                        break;
+                        skuIdx = row.indexOf('SKU'); locIdx = row.indexOf('Cód. Interno'); break;
                     }
                 }
-                
                 if (skuIdx !== -1) {
-                    rows.forEach(r => { 
-                        if(r[skuIdx]) skuLocationMap.set(parseString(r[skuIdx]), parseString(r[locIdx])); 
-                    });
+                    rows.forEach(r => { if(r[skuIdx]) skuLocationMap.set(parseString(r[skuIdx]), parseString(r[locIdx])); });
                     document.getElementById('locationFileLabel').innerText = `${skuLocationMap.size} SKUs OK`;
                 }
                 e.target.value = ''; 
@@ -196,38 +201,44 @@
             return skuLocationMap.has(s) ? skuLocationMap.get(s) : s;
         };
 
-        // --- Estratégias de Processamento por Plataforma ---
         const strategies = {
             shopee: (rows) => {
                 const results = [];
                 const orders = {};
+                
+                // --- CORREÇÃO DE OFFSET DINÂMICO ---
+                // Detecta se a nova coluna "Hot Listing" existe para ajustar os índices
+                let offset = 0;
+                if (rows[0] && rows[0].includes('Hot Listing')) {
+                    offset = 1;
+                }
+                // -----------------------------------
+
                 for (let i = 1; i < rows.length; i++) {
                     const col = rows[i];
                     if (!col || !col[0]) continue;
                     const id = parseString(col[0]);
-
-                    if (!orders[id]) {
-                        orders[id] = { 
-                            p: 0, q: 0, items: [], names: [], 
-                            // Taxas AO (40) e AQ (42) da primeira linha do pedido
-                            taxa: parseMoney(col[40]) + parseMoney(col[42])
-                        };
-                    }
-                    const p = parseMoney(col[18]), q = parseInt(col[16] || 1);
-                    orders[id].p += (p * q); 
-                    orders[id].q += q;
-                    orders[id].names.push(col[11]);
                     
-                    let skuStr = col[12] ? getSkuOrLocation(col[12]) : (col[13] || 'S/ SKU');
+                    // Ajuste dos índices originais somando o offset
+                    if (!orders[id]) orders[id] = { 
+                        p: 0, 
+                        q: 0, 
+                        items: [], 
+                        names: [], 
+                        taxa: parseMoney(col[40 + offset]) + parseMoney(col[42 + offset]) 
+                    };
+                    
+                    const p = parseMoney(col[18 + offset]), q = parseInt(col[16 + offset] || 1);
+                    orders[id].p += (p * q); orders[id].q += q;
+                    orders[id].names.push(col[11 + offset]);
+                    
+                    // Mantendo sua regra original de SKU e Variação
+                    let skuStr = col[12 + offset] ? getSkuOrLocation(col[12 + offset]) : (col[13 + offset] || 'S/ SKU');
                     orders[id].items.push(`${skuStr} (x${q})`);
                 }
-                
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
-                    const skuDisp = o.items.length > 1 
-                        ? `COM ${o.items.length}<br>${o.items.join('<br>')}` 
-                        : (o.q > 1 ? `QUANTIDADE ${o.q}` : o.items[0].replace(' (x1)', ''));
-                    
+                    const skuDisp = o.items.length > 1 ? `COM ${o.items.length}<br>${o.items.join('<br>')}` : (o.q > 1 ? `QUANTIDADE ${o.q}` : o.items[0].replace(' (x1)', ''));
                     results.push({ site: 'SH', id, prod: o.p, frete: 0, total: o.p, nome: o.names.join('; '), status: 'PAGO', cod: 'SH', sku: skuDisp, liq: (o.p - o.taxa) });
                 });
                 return results;
@@ -240,13 +251,11 @@
                     const col = rows[i];
                     if (!col || !col[0]) continue;
                     const id = parseString(col[0]);
-                    
                     if (!orders[id]) orders[id] = { p: 0, c: 0, names: [], sku: col[19] };
                     orders[id].p += parseMoney(col[7]);
                     orders[id].c += parseMoney(col[16]);
                     orders[id].names.push(col[22]);
                 }
-                
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
                     results.push({ site: 'ML', id, prod: o.p, frete: 0, total: o.p, nome: o.names.join(';'), status: 'PAGO', cod: 'ML', sku: getSkuOrLocation(o.sku), liq: o.c });
@@ -259,12 +268,8 @@
                 for (let i = 1; i < rows.length; i++) {
                     const col = rows[i];
                     if (!col || !col[0]) continue;
-                    const total = parseMoney(col[16]);
-                    const prod = parseMoney(col[32]);
-                    results.push({ 
-                        site: 'AZ', id: col[0], prod: prod, frete: (total - prod), total: total, 
-                        nome: col[28], status: 'PAGO', cod: 'AZ', sku: getSkuOrLocation(col[29]), liq: (total * 0.85) 
-                    });
+                    const total = parseMoney(col[16]), prod = parseMoney(col[32]);
+                    results.push({ site: 'AZ', id: col[0], prod: prod, frete: (total - prod), total: total, nome: col[28], status: 'PAGO', cod: 'AZ', sku: getSkuOrLocation(col[29]), liq: (total * 0.85) });
                 }
                 return results;
             },
@@ -274,16 +279,26 @@
                 const orders = {};
                 for (let i = 1; i < rows.length; i++) {
                     const col = rows[i]; 
-                    if (!col || !col[3]) continue; // Coluna D: Pedido
+                    if (!col || !col[3]) continue;
                     const id = parseString(col[3]);
                     
-                    if (!orders[id]) orders[id] = { p: 0, f: parseMoney(col[28]), skus: [], names: [] };
+                    if (!orders[id]) {
+                        // Regra de Frete: Sedex=0, Outros=-4.29
+                        const tipoFrete = String(col[25] || '').toLowerCase();
+                        let valorFrete = parseMoney(col[28]);
+                        if (tipoFrete.includes('sedex')) valorFrete = 0;
+                        else valorFrete = valorFrete - 4.29;
+
+                        orders[id] = { p: 0, f: valorFrete, skus: [], names: [] };
+                    }
                     orders[id].p += parseMoney(col[30]);
                     orders[id].names.push(col[7]);
-                    const skuMatch = col[10] ? col[10].match(/SKU: (\d+)/) : null;
+                    
+                    // CORREÇÃO: Converte para String antes de fazer match para evitar erro em células numéricas
+                    const cellVal = String(col[10] || '');
+                    const skuMatch = cellVal.match(/SKU: (\d+)/);
                     orders[id].skus.push(getSkuOrLocation(skuMatch ? skuMatch[1] : 'S/ SKU'));
                 }
-                
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
                     const skuDisp = o.skus.length > 1 ? `COM ${o.skus.length}<br>${o.skus.join('<br>')}` : o.skus[0];
@@ -293,16 +308,13 @@
             }
         };
 
-        // --- Manipulação de Arquivos ---
         const inputs = ['shopee', 'mercadolivre', 'amazon', 'estante'];
         inputs.forEach(p => {
             const input = document.getElementById(`${p}FileInput`);
-            if(input) {
-                input.onchange = (e) => {
-                    if(e.target.files.length > 0) handleFiles(e.target.files, p);
-                    e.target.value = ''; // Limpa input
-                };
-            }
+            if(input) input.onchange = (e) => {
+                if(e.target.files.length > 0) handleFiles(e.target.files, p);
+                e.target.value = ''; 
+            };
         });
 
         function handleFiles(files, platform) {
@@ -312,72 +324,50 @@
                 reader.onload = (e) => {
                     const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
-                    
-                    // Executa a estratégia correta
-                    if (strategies[platform]) {
-                        const processedData = strategies[platform](rows);
-                        renderBatch(processedData);
-                    }
+                    if (strategies[platform]) renderBatch(strategies[platform](rows));
                 };
                 reader.readAsArrayBuffer(file);
             });
         }
 
-        // --- Renderização Otimizada (DocumentFragment) ---
         function renderBatch(dataList) {
             const fragment = document.createDocumentFragment();
             dataList.forEach(d => {
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-plat', d.site);
-                tr.innerHTML = `
-                    <td>${d.site}</td>
-                    <td>${d.id}</td>
-                    <td>${formatNumber(d.prod)}</td>
-                    <td>${formatNumber(d.frete)}</td>
-                    <td>${formatNumber(d.total)}</td>
-                    <td style="max-width:200px;overflow:hidden">${d.nome}</td>
-                    <td>${d.status}</td>
-                    <td>${d.cod}</td>
-                    <td>${d.sku}</td>
-                    <td>${formatNumber(d.liq)}</td>`;
+                tr.innerHTML = `<td>${d.site}</td><td>${d.id}</td><td>${formatNumber(d.prod)}</td><td>${formatNumber(d.frete)}</td><td>${formatNumber(d.total)}</td>
+                    <td style="max-width:200px;overflow:hidden">${d.nome}</td><td>${d.status}</td><td>${d.cod}</td><td>${d.sku}</td><td>${formatNumber(d.liq)}</td>`;
                 fragment.appendChild(tr);
             });
             dataTableBody.appendChild(fragment);
         }
 
-        // --- Controles de UI ---
         document.getElementById('clearButton').onclick = () => { dataTableBody.innerHTML = ''; resultsPanel.style.display = 'none'; };
-        
         document.getElementById('exportXLSButton').onclick = () => {
             const data = [["Site","ID","Prod","Frete","Total","Nome","Status","Cód","SKU","Líquido"]];
             Array.from(dataTableBody.rows).forEach(r => data.push(Array.from(r.cells).map(c => c.innerText.replace(/\n/g, ' '))));
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados");
-            XLSX.writeFile(wb, "Processado_v11_5.xls");
+            XLSX.writeFile(wb, "Processado_v11_8.xls");
         };
 
         const copyData = (plat) => {
             let text = "";
             const rows = plat ? dataTableBody.querySelectorAll(`tr[data-plat="${plat}"]`) : dataTableBody.rows;
-            Array.from(rows).forEach(r => {
-                const cells = Array.from(r.cells).slice(1).map(c => c.innerText.replace(/\n/g, ' '));
-                text += cells.join('\t') + '\n';
-            });
+            Array.from(rows).forEach(r => text += Array.from(r.cells).slice(1).map(c => c.innerText.replace(/\n/g, ' ')).join('\t') + '\n');
             navigator.clipboard.writeText(text);
             messageBox.innerText = "Copiado!";
             setTimeout(() => messageBox.innerText = "Pronto para processar.", 2000);
         };
-
         document.getElementById('copyAllButton').onclick = () => copyData(null);
         document.getElementById('copyShopeeButton').onclick = () => copyData('SH');
         document.getElementById('copyMercadoLivreButton').onclick = () => copyData('ML');
         document.getElementById('copyAmazonButton').onclick = () => copyData('AZ');
         document.getElementById('copyEstanteButton').onclick = () => copyData('EV');
 
-        // Links
         const openTabs = (urls) => urls.forEach(url => window.open(url, '_blank'));
         document.getElementById('openSitesButton').onclick = () => openTabs(['https://seller.shopee.com.br/', 'https://www.mercadolivre.com.br/resumo/v2', 'https://sellercentral.amazon.com.br/', 'https://painel.estantevirtual.com.br/vendas']);
-        document.getElementById('openSheetsButton').onclick = () => openTabs(['https://seller.shopee.com.br/portal/sale/order', 'https://www.mercadolivre.com.br/vendas/omni/lista', 'https://app.upseller.com/pt/order/to-ship', 'https://livreiro.estantevirtual.com.br/vendas']);
+        document.getElementById('openSheetsButton').onclick = () => openTabs(['https://seller.shopee.com.br/portal/sale/order?type=toship&source=to_process&invoice_status=all_type&sort_by=ship_by_date_asc', 'https://www.mercadolivre.com.br/vendas/omni/lista?filters=TAB_TODAY#type=recent', 'https://app.upseller.com/pt/order/to-ship', 'https://livreiro.estantevirtual.com.br/vendas?termo=&periodo=total&status=standby&forma_pagamento=todas&carrier=&envio=']);
     });
 </script>
 </body>
